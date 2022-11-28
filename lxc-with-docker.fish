@@ -6,6 +6,7 @@ set DEFAULT_STORAGE "docker"
 set APT_PACKAGES "ca-certificates" "curl" "gnupg" "lsb-release" "fish" "neovim"
 set INSTALL_EPEL_RELEASE "epel-release"
 set DNF_PACKAGES "ca-certificates" "curl" "gnupg" "redhat-lsb-core" "fish" "neovim" "openssh-server"
+set YUM_PACKAGES "ca-certificates" "curl" "gnupg" "redhat-lsb-core" "fish" "neovim" "openssh-server"
 set STORAGE_TYPE "btrfs"
 set LOG_MSG_COLORS "yes"
 
@@ -143,6 +144,20 @@ function installPkgs
         end
         lxc exec $argv[3] -- dnf install -y $DNF_PACKAGES
     end
+
+    if test $argv[4] != ''
+        log 2 'Installing '(string join ' ' $YUM_PACKAGES)' with dnf in '$argv[3]
+        if test $INSTALL_EPEL_RELEASE != ""
+            if lxc exec $argv[3] -- cat /etc/os-release | grep -Pe'^ID="amzn"' >/dev/null 2>&1
+                log 3 'Amazon Linux distro detected. Install epel-release with amazon-linux-extras command'
+                lxc exec $argv[3] -- amazon-linux-extras install epel -y
+            else
+                log 3 'Installing '$INSTALL_EPEL_RELEASE
+                lxc exec $argv[3] -- yum install -y $INSTALL_EPEL_RELEASE
+            end
+        end
+        lxc exec $argv[3] -- yum install -y $DNF_PACKAGES
+    end
 end
 
 function createUser
@@ -201,6 +216,7 @@ argparse \
         'p/password=?' \
         'apt' \
         'dnf' \
+        'yum' \
         'login' \
     -- $argv
 
@@ -237,7 +253,7 @@ createStorage $_flag_s
 createVol $_flag_v $_flag_s
 attachVolume $_flag_c $_flag_d $_flag_s $_flag_v
 configContainer $_flag_c
-installPkgs "$_flag_apt" "$_flag_dnf" $_flag_c
+installPkgs "$_flag_apt" "$_flag_dnf" $_flag_c "$_flag_yum"
 createUser "$_flag_u" "$_flag_p" $_flag_c
 if test "$_flag_login" != ''
     logIn "$_flag_u" $_flag_c
