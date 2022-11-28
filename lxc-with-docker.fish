@@ -22,6 +22,7 @@ function usage
             [-pPASSWORD | --password=PASSWORD]
             [--apt]
             [--dnf]
+            [--yum]
             [--login]'
 
     echo '
@@ -35,6 +36,7 @@ Other config:
 
     --apt. Install '(string join ', ' $APT_PACKAGES)' packages in the container with apt
     --dnf. Install '$INSTALL_EPEL_RELEASE', '(string join ', ' $DNF_PACKAGES)' packages in the container with dnf
+    --yum. Install '$INSTALL_EPEL_RELEASE', '(string join ', ' $YUM_PACKAGES)' packages in the container with dnf
     --login. Enable to login with USER_NAME user when deployment will finish. It requires USER_NAME and PASSWORD are defined.
 '
 end
