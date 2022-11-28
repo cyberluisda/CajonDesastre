@@ -174,7 +174,7 @@ function createUser
         end
 
         set -l shell "/bin/bash"
-        if type -t "fish" >/dev/null
+        if lxc exec $argv[3] -- /bin/bash -c 'type -t "fish"' >/dev/null
             set shell "/usr/bin/fish"
         end
 
