@@ -36,9 +36,13 @@ If USER_NAME is defined then a user is created in the container identified by PA
 Other config:
 
     --apt. Install '(string join ', ' $APT_PACKAGES)' packages in the container with apt
-    --dnf. Install '$INSTALL_EPEL_RELEASE', '(string join ', ' $DNF_PACKAGES)' packages in the container with dnf
-    --yum. Install '$INSTALL_EPEL_RELEASE', '(string join ', ' $YUM_PACKAGES)' packages in the container with dnf
+    --dnf. Install '$INSTALL_EPEL_RELEASE', '$INSTALL_REDHAT_LSB_CORE', '(string join ', ' $DNF_PACKAGES)' packages in the container with dnf
+    --yum. Install '$INSTALL_EPEL_RELEASE', '$INSTALL_REDHAT_LSB_CORE', '(string join ', ' $YUM_PACKAGES)' packages in the container with dnf
     --login. Enable to login with USER_NAME user when deployment will finish. It requires USER_NAME and PASSWORD are defined.
+
+Installation of '$INSTALL_REDHAT_LSB_CORE' package can be disabled if you set INSTALL_REDHAT_LSB_CORE environment variable to ""
+Installation of '$INSTALL_EPEL_RELEASE' package can be disabled if you set INSTALL_EPEL_RELEASE environment variable to ""
+
 '
 end
 
