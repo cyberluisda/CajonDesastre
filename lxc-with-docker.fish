@@ -4,9 +4,10 @@
 set DEFAULT_IMAGE "ubuntu:20.04"
 set DEFAULT_STORAGE "docker"
 set APT_PACKAGES "ca-certificates" "curl" "gnupg" "lsb-release" "fish" "neovim"
-set INSTALL_EPEL_RELEASE "epel-release"
+set -q INSTALL_EPEL_RELEASE || set INSTALL_EPEL_RELEASE "epel-release"
 set -q INSTALL_REDHAT_LSB_CORE || set INSTALL_REDHAT_LSB_CORE "redhat-lsb-core"
 set DNF_PACKAGES "ca-certificates" "tar" "sshpass" "curl" "gnupg" "fish" "neovim" "openssh-server"
+set YUM_PACKAGES "ca-certificates" "curl" "gnupg" "fish" "neovim" "openssh-server"
 set STORAGE_TYPE "btrfs"
 set LOG_MSG_COLORS "yes"
 
