@@ -158,7 +158,11 @@ function installPkgs
                 lxc exec $argv[3] -- yum install -y $INSTALL_EPEL_RELEASE
             end
         end
-        lxc exec $argv[3] -- yum install -y $DNF_PACKAGES
+        if test $INSTALL_REDHAT_LSB_CORE != ""
+            log 3 'Installing '$INSTALL_REDHAT_LSB_CORE
+            lxc exec $argv[3] -- yum install -y $INSTALL_REDHAT_LSB_CORE
+        end
+        lxc exec $argv[3] -- yum install -y $YUM_PACKAGES
     end
 end
 
