@@ -9,7 +9,7 @@ set DEFAULT_IMAGE "ubuntu:20.04"
 set DEFAULT_STORAGE "docker"
 set APT_PACKAGES "ca-certificates" "curl" "gnupg" "lsb-release" "fish" "neovim"
 set DNF_PACKAGES "ca-certificates" "tar" "sshpass" "curl" "gnupg" "fish" "neovim" "openssh-server"
-set YUM_PACKAGES "ca-certificates" "curl" "gnupg" "fish" "neovim" "openssh-server"
+set YUM_PACKAGES "ca-certificates" "curl" "gnupg" "fish" "neovim" "openssh-server" "openssh-clients"
 set STORAGE_TYPE "btrfs"
 set LOG_MSG_COLORS "yes"
 
