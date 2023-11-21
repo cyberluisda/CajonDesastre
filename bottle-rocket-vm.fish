@@ -21,6 +21,27 @@ set -q BRVM_WAIT_FOR_VM_UP; or set BRVM_WAIT_FOR_VM_UP "60"
 set BRVM_IMAGE "bottlerocket-$BRVM_VARIANT-$BRVM_ARCH-$BRVM_VERSION.img"
 set LOG_MSG_COLORS "yes"
 
+function usage
+    echo '
+'(status filename)'
+    [-h | --help] [-n | --next-steps]
+
+Create a BottleRocket VM with virtualbox
+
+It was inspired in [btiernay/create-mac-bottlerocket-virtualbox-vm.sh]https://gist.github.com/btiernay/5e4d62b126f28962cd008094e867e9a2
+
+Options
+    -h Display current text and exit
+    -n Display next steps tutorial only and exit
+
+Configuration properties are passed using env vars. Allowed environment variables with default values are:
+'
+    cat (status filename) | grep -P '^set -q[^;]+; or' | sed -e 's/set -q [^;]*; or set //g' -e 's/ /=/g'
+
+    echo ''
+
+end
+
 function log
     set -l level $argv[1]
     set -l levels "(**)" "(++)" "(--)" "(··)"
