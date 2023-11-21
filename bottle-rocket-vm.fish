@@ -246,6 +246,14 @@ NOTE that --cni is not enabled because threre is not any CNI plugin installed by
 '
 end
 
+argparse \
+    'h/help' \
+-- $argv
+
+if set -q _flag_h
+    usage
+    exit 0
+end
 checkCommands
 workinDir; or exit 1
 installTools; or exit 1
