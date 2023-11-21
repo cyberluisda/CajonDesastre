@@ -47,9 +47,9 @@ function log
 end
 
 function checkCommands
-    echo "(**) Checking required commands"
+    log 1 "Checking required commands"
     for c in "VBoxManage" "unlz4" "ssh-keygen" "cargo" "losetup" "sudo" "sha512sum" "ssh" "scp"
-        echo "(++) $c"
+        log 2 "$c"
         if not type -q "$c"
             echo "(EE) command $c not found. Aborting"
             exit 1
@@ -58,50 +58,50 @@ function checkCommands
 end
 
 function workinDir
-    echo "(**) Preparing working directory"
+    log 1 "Preparing working directory"
     set BRVM_OLDWORKDIR "$PWD"
-    echo "(++) Ensuring $BRVM_WORKINGDIR directory exists"
+    log 2 "Ensuring $BRVM_WORKINGDIR directory exists"
     mkdir -p $BRVM_WORKINGDIR
-    echo "(++) Changing to $BRVM_WORKINGDIR directory"
+    log 2 "Changing to $BRVM_WORKINGDIR directory"
     cd $BRVM_WORKINGDIR
 end
 
 function installTools
-    echo "(**) Installing required tools"
-    echo "(++) tuftool"
+    log 1 "Installing required tools"
+    log 2 "tuftool"
     cargo install tuftool
 end
 
 function vmImage
-    echo "(**) VM image"
+    log 1 "VM image"
 
-    echo "(++) Downloading spec"
+    log 2 "Downloading spec"
     curl -sSLo root.json "$BRVM_BOTTLE_SPEC"
 
-    echo "(--) Checking sha512 hash code"
+    log 3 "Checking sha512 hash code"
     echo "$BRVM_BOTTLE_SPEC_SHA512 root.json" > root.json.sha512
     sha512sum -c root.json.sha512; or exit 1
 
-    echo "(++) Fetching image"
+    log 2 "Fetching image"
     $HOME/.cargo/bin/tuftool download image --target-name "$BRVM_IMAGE.lz4" \
         --root ./root.json \
         --metadata-url "https://updates.bottlerocket.aws/$BRVM_METADATA_DATE/$BRVM_VARIANT/$BRVM_ARCH/" \
         --targets-url "https://updates.bottlerocket.aws/targets/"
 
-    echo "(++) Extracting image"
+    log 2 "Extracting image"
     unlz4 "image/$BRVM_IMAGE.lz4"
     mv "image/$BRVM_IMAGE" .
     rm -rf image/
 end
 
 function configureVM
-    echo "(**) VM configuration"
+    log 1 "VM configuration"
 
-    echo "(++) New ssh key"
+    log 2 "New ssh key"
     yes | ssh-keygen -q -t rsa -N '' -f $BRVM_SSHKEY_PREFIX >/dev/null 2>&1
 
-    echo "(++) Bottelrocket config files"
-    echo "(--) $BRVM_NETWORKFILE"
+    log 2 "Bottelrocket config files"
+    log 3 "$BRVM_NETWORKFILE"
     echo '
 version = 2
 [enp0s3]
@@ -109,7 +109,7 @@ version = 2
 dhcp4 = true
 ' > "$BRVM_NETWORKFILE"
 
-    echo "(--) $BRVM_USERDATAFILE"
+    log 3 "$BRVM_USERDATAFILE"
     set -l authorizedKeys (echo '{"ssh":{"authorized-keys":["'(cat $BRVM_SSHKEY_PREFIX.pub)'"]}}' | base64 -w 0)
     echo '
 [settings.host-containers.admin]
@@ -125,7 +125,7 @@ standalone-mode = true
 end
 
 function injectImageConfig
-    echo "(**) Injecting custom config in the Image"
+    log 1 "Injecting custom config in the Image"
     sudo mkdir /mnt/brvm
     set -l loopDevice (losetup -f)
     sudo losetup -P $loopDevice (realpath "$BRVM_IMAGE")
@@ -138,9 +138,9 @@ function injectImageConfig
 end
 
 function createVM
-    echo "(**) Creating VM with VirtualBox"
+    log 1 "Creating VM with VirtualBox"
 
-    echo "(++) Converting img to vdi disk"
+    log 2 "Converting img to vdi disk"
     set -l vdiDisk (basename "$BRVM_IMAGE" .img)".vdi"
     if test -f $vdiDisk
         echo "(WW) Old $vdiDisk detected, REMOVING!"
@@ -148,48 +148,48 @@ function createVM
     end
     VBoxManage convertfromraw --format VDI $BRVM_IMAGE $vdiDisk
 
-    echo "(++) Registering vm as $BRVM_NAME"
+    log 2 "Registering vm as $BRVM_NAME"
     if test -d $BRVM_NAME
         echo "(WW) $BRVM_NAME vm found. REMOVING!"
         rm -fr $BRVM_NAME
     end
     VBoxManage createvm --name $BRVM_NAME --ostype Linux26_64 --register --basefolder $PWD
 
-    echo "(++) Customize options"
-    echo "(--) ioapic on"
+    log 2 "Customize options"
+    log 3 "ioapic on"
     VBoxManage modifyvm $BRVM_NAME --ioapic on
-    echo "(--) memory 1024, vram 128"
+    log 3 "memory 1024, vram 128"
     VBoxManage modifyvm $BRVM_NAME --memory 1024 --vram 128
-    echo "(--) nic1 in nat mode"
+    log 3 "nic1 in nat mode"
     VBoxManage modifyvm $BRVM_NAME --nic1 nat
 
-    echo "(++) Configure disk"
+    log 2 "Configure disk"
     VBoxManage storagectl $BRVM_NAME --name "SATA Controller" --add sata --controller IntelAhci
     VBoxManage storageattach $BRVM_NAME --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium  $PWD/$vdiDisk
 
-    echo "(++) SSH Port forwarding $BRVM_SSH_PORTNAT->22"
+    log 2 "SSH Port forwarding $BRVM_SSH_PORTNAT->22"
     VBoxManage modifyvm $BRVM_NAME --natpf1 "ssh,tcp,,$BRVM_SSH_PORTNAT,,22"
 end
 
 function startVM
-    echo "(**) First VM starting"
+    log 1 "First VM starting"
     VBoxManage startvm $BRVM_NAME --type headless
 
-    echo "(++) Saving VM info in $BRVM_NAME.txt"
+    log 2 "Saving VM info in $BRVM_NAME.txt"
     VBoxManage showvminfo $BRVM_NAME --machinereadable > $BRVM_NAME.txt
 
-    echo "(++) Waiting $BRVM_WAIT_FOR_VM_UP seconds to ensure VM was started"
+    log 2 "Waiting $BRVM_WAIT_FOR_VM_UP seconds to ensure VM was started"
     sleep $BRVM_WAIT_FOR_VM_UP
 
-    echo "(++) Running sudo sheltie"
+    log 2 "Running sudo sheltie"
     ssh -i ./$BRVM_SSHKEY_PREFIX -p $BRVM_SSH_PORTNAT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t ec2-user@127.0.0.1 "sudo sheltie"
 
-    echo "(++) Shutingdown VM"
+    log 2 "Shutingdown VM"
     VBoxManage controlvm $BRVM_NAME acpipowerbutton
 end
 
 function nextSteps
-    echo "(**) Next steps"
+    log 1 "Next steps"
     echo '
 Now you can start the VM using VirtualBox GUI or Cli:
 
