@@ -19,6 +19,32 @@ set -q BRVM_WAIT_FOR_VM_UP; or set BRVM_WAIT_FOR_VM_UP "60"
 
 # Global config
 set BRVM_IMAGE "bottlerocket-$BRVM_VARIANT-$BRVM_ARCH-$BRVM_VERSION.img"
+set LOG_MSG_COLORS "yes"
+
+function log
+    set -l level $argv[1]
+    set -l levels "(**)" "(++)" "(--)" "(··)"
+    set -l colorMods "\033[32;1m" "\033[34;1m" "\033[35m" "\033[37;1m"
+    set -l levelStr "(  )"
+    set -l colorMod ""
+    if test $level -eq 0
+      set levelStr "(!!)"
+      set colorMod "\033[33;5;1m"
+    else if test $level -lt 0
+      set levelStr "(EE)"
+      set colorMod "\033[31;1m"
+    else if test $level -lt 5
+      set levelStr $levels[$level]
+      set colorMod $colorMods[$level]
+    end
+
+    if test $LOG_MSG_COLORS = "yes"
+      set levelStr $colorMod$levelStr'\033[0m'
+      echo -e $levelStr' '$argv[2]
+    else
+      echo $levelStr' '$argv[2]
+    end
+end
 
 function checkCommands
     echo "(**) Checking required commands"
