@@ -222,7 +222,7 @@ Now you can start the VM using VirtualBox GUI or Cli:
 
 Next command connect to the VM using ssh:
 
-    ssh -i '$PWD/./$BRVM_SSHKEY_PREFIX' -p '$BRVM_SSH_PORTNAT' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t ec2-user@127.0.0.1
+    ssh -i '$BRVM_WORKINGDIR/$BRVM_SSHKEY_PREFIX' -p '$BRVM_SSH_PORTNAT' -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t ec2-user@127.0.0.1
 
 When you are logged in the VM you can enter in bottlerocket admin mode with:
 
