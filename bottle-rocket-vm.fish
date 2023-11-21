@@ -248,12 +248,19 @@ end
 
 argparse \
     'h/help' \
+    'n/next-steps' \
 -- $argv
 
 if set -q _flag_h
     usage
     exit 0
 end
+
+if set -q _flag_n
+    nextSteps
+    exit 0
+end
+
 checkCommands
 workinDir; or exit 1
 installTools; or exit 1
